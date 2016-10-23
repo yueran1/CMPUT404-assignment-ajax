@@ -7,6 +7,7 @@
     <meta name="viewport" content="width=device-width" />
     <meta name="license" content="
         Copyright 2013 Abram Hindle
+		       Sun Yue Ran
         
         Licensed under the Apache License, Version 2.0 (the "License");
         you may not use this file except in compliance with the License.
@@ -30,19 +31,16 @@ var host = window.location.host;
 var context = canvas.getContext("2d");
 var W = canvas.width  = window.innerWidth-6;
 var H = canvas.height = window.innerHeight-50;
-
-
 function sendJSONXMLHTTPRequest(url, objects, callback) {
     var xhr = new XMLHttpRequest();
     xhr.onreadystatechange = function () {
         if (xhr.readyState==4) {
             try {
                 if (xhr.status==200) {
-                    	//XXX: parse some JSON from the request!
-                    	//XXX: Pass the data to the callback!
-			var obj= JSON.parse(xhr.responseText);
-			//callback is nested function			
-			callback(obj);
+                    //XXX: parse some JSON from the request!
+                    //XXX: Pass the data to the callback!
+	            var obj= JSON.parse(xhr.responseText);
+		    callback(obj);
                 }
             } 
             catch(e) {
@@ -50,19 +48,16 @@ function sendJSONXMLHTTPRequest(url, objects, callback) {
             }
         }
     };
-    	//XXX: POST to a URL
-    	//XXX: set the mimetype and the accept headers!
-    	// Remember to use application/json !
-	xhr.open('POST',url);
-	xhr.setRequestHeader("Content-Type","application/json");
-	xhr.setRequestHeader("Content-Length", objects.length);
-	xhr.setRequestHeader("Accept","application/json");
-	xhr.send(JSON.stringify(objects));
+    //XXX: POST to a URL
+    //XXX: set the mimetype and the accept headers!
+    // Remember to use application/json !
+    xhr.open('POST', url);
+    xhr.setRequestHeader('Content-Type', 'application.json');
+    
+    xhr.setRequestHeader('Accept','application/json');
+    xhr.send(JSON.stringify(objects));
 }
-
-
 world = {};
-
 //XXX: TODO Make this prettier!
 function drawCircle(context,entity) {
     with(context) {
@@ -73,11 +68,10 @@ function drawCircle(context,entity) {
         //moveTo(x,y);
         fillStyle = entity["colour"];
         strokeStyle = fillStyle;
-        arc(x, y, (entity["radius"])?entity["radius"]:50, 0, 2.0 * Math.PI, false);  
+        arc(x, y, (entity["radius"])?entity["radius"]:35, 0, 2.0 * Math.PI, false);  
         stroke();                                
     }
 }
-
 function prepEntity(entity) {
     if (!entity["colour"]) {
         entity["colour"] = "#FF0000";
@@ -87,16 +81,13 @@ function prepEntity(entity) {
     }
     return entity;
 }
-
 function clearFrame() {
     with(context) {
 	moveTo(0,0);
 	fillStyle = "#000";
 	fillRect(0,0,W,H);
     }
-
 }
-
 // This actually draws the frame
 function renderFrame() {
     clearFrame();
@@ -105,14 +96,11 @@ function renderFrame() {
         drawCircle(context,prepEntity(entity));
     }
 }
-
 var drawNext = true;
-
 // Signals that there's something to be drawn
 function drawNextFrame() {
     drawNext = true;
 }
-
 // This optionally draws the frame, call this if you're not sure if you should update
 // the canvas
 function drawFrame() {
@@ -121,10 +109,8 @@ function drawFrame() {
         drawNext = false;
     }
 }
-
 // This is unpleasent, canvas clicks are not handled well
 // So use this code, it works well on multitouch devices as well.
-
 function getPosition(e) {
 	if ( e.targetTouches && e.targetTouches.length > 0) {
 		var touch = e.targetTouches[0];
@@ -140,22 +126,20 @@ function getPosition(e) {
 		return [x,y];
 	}
 }
-
-
 function addEntity(entity, data) {
     world[entity] = data;
     drawNextFrame(); // (but should we?)
     //XXX: Send a XHTML Request that updates the entity you just  modified!
-    sendJSONXMLHTTPRequest("http://127.0.0.1:5000/entity/"+entity, data, drawCircle);
+    sendJSONXMLHTTPRequest('/entity/' + entity, data, function(){
+                drawNextFrame();
+    });
 }
-
 var counter = 0;
 function addEntityWithoutName(data) {
     //var name = "X"+Math.floor((Math.random()*100)+1);
     var name = "X"+(counter++)%100;
     addEntity(name,data);
 }
-
 // canvas + mouse/touch is complicated 
 // I give you this because well the mouse/touch stuff is a total
 // pain to get right. This has some out of context bug too.
@@ -251,36 +235,29 @@ mouse = (function() {
     self.mouseinstall();
     return self;
 })();
-
 // Add the application specific mouse listeners!
 //XXX: TODO Make these prettier!
 mouse.mousedowners.push(function(x,y,clicked,e) {
     addEntityWithoutName({'x':x,'y':y,'colour':'blue'});
 });
-
 mouse.mouseuppers.push(function(x,y,clicked,e) {
-    addEntityWithoutName({'x':x,'y':y,'colour':'yellow'});
+    addEntityWithoutName({'x':x,'y':y,'colour':'red'});
 });
-
 mouse.mousedraggers.push(function(x,y,clicked,e) {
-    addEntityWithoutName({'x':x,'y':y,'colour':'red',
+    addEntityWithoutName({'x':x,'y':y,'colour':'orange',
                           'radius':10});
 });
-
-
 function update() {
     //XXX: TODO Get the world from the webservice using a XMLHTTPRequest
-    sendJSONXMLHTTPRequest("/world",null, function(newWorld){
-	world= newWorld;
-	drawFrame();
+    sendJSONXMLHTTPRequest('/world', null, function(newWorld){
+             world=newWorld;
     });
-}
+    drawNextFrame();
 
+    drawFrame();
+}
 // 30 frames per second
 setInterval( update, 1000/30.0);
-
-
-
     </script>
 </body>
 </html>

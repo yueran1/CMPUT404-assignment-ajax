@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # coding: utf-8
-# Copyright 2013 Abram Hindle
+# Copyright 2013 
+# Abram Hindle
+# Sun Yue Ran
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -32,7 +34,7 @@ app.debug = True
 #    'a':{'x':1, 'y':2},
 #    'b':{'x':2, 'y':3}
 # }
-print ("haha: ", request)
+
 
 class World:
     def __init__(self):
@@ -93,12 +95,7 @@ def update(entity):
 @app.route("/world", methods=['POST','GET'])    
 def world():
     	'''you should probably return the world here'''
-	if request.method=='GET':
-		return json.dumps(myWorld.world())
-	else:
-		obj=flask_post_json()
-		for key in obj:
-			myWorld.set(key,obj[key])
+	
 
 	return json.dumps(myWorld.world())
 
